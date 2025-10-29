@@ -1,24 +1,25 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+class ColorPlayground {
+    private readonly canvas: HTMLCanvasElement | null;
+    private readonly ctx: CanvasRenderingContext2D | null;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+    constructor(){
+        this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        if(!this.canvas) throw new Error("Cannot get Canvas Element");
+        this.canvas.width = window.innerWidth*0.98;
+        this.canvas.height = window.innerHeight*0.96;
+
+        this.ctx = this.canvas.getContext("2d");
+    }
+
+    draw(){
+        const ctx = this.ctx;
+        if(!ctx) throw new Error("Can't get Canvas Context");
+
+        ctx.fillStyle = 'black';
+        ctx.fillRect(10,10, 150, 100);
+    }
+}
+
+const c = new ColorPlayground();
+c.draw();
