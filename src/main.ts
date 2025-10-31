@@ -4,13 +4,18 @@ import Perlin from "./perlin.ts";
 
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;
-    private readonly ctx: CanvasRenderingContext2D | null;
+    private readonly ctx: CanvasRenderingContext2D;
     private readonly spacer: number;
     private readonly innerSpacer: number;
     private colorButton: HTMLButtonElement | undefined;
     private structureToggle: HTMLButtonElement | undefined;
     private perlin: Perlin;
     private terrain: number[] | undefined;
+    private readonly boxFractions: number[];
+    private innerBoxes: innerBox[] | undefined;
+    private colors: Colord[] | undefined;
+    private colorIDX: number;
+    private numColorRows: number | undefined;
 
     constructor(){
 
@@ -23,29 +28,18 @@ class ColorPlayground {
         this.canvas.width = Math.floor(window.innerWidth*0.98);
         this.canvas.height = Math.floor((window.innerHeight - height) * 0.96);
 
-        this.ctx = this.canvas.getContext("2d");
-        this.spacer = 10;
-        this.innerSpacer = 2/3*this.spacer;
+        const context = this.canvas.getContext("2d");
+        if(!context) throw new Error("Could not get context");
+        this.ctx = context;
 
+        this.spacer = 10;
+        this.colorIDX = 0;
+        this.innerSpacer = this.spacer/2;
+        this.boxFractions = [0.33, 0.67];
+        this.colors = this.pushColors();
         this.perlin = new Perlin(Math.random());
 
         this.initialize();
-    }
-
-    generateTerrain(innerBox: innerBox): number[] {
-        const width = innerBox.width;
-        const height = innerBox.height;
-        console.log(width, height);
-        const size = width*height;
-        let terrain: number[] = new Array<number>(size).fill(0);
-
-        for(let x = 0; x < width; x++){
-            for(let y = 0; y < height; y++){
-                const index = y*width + x;
-                terrain[index] = Math.floor(Math.abs(this.perlin.perlin2(x / 50, y / 50)) * 50);
-            }
-        }
-        return terrain;
     }
 
     initialize(){
@@ -57,17 +51,18 @@ class ColorPlayground {
         this.structureToggle = document.getElementById("structure-toggle") as HTMLButtonElement;
 
         this.addEventListeners();
+        this.draw();
     }
 
     addEventListeners() {
         if(!this.colorButton || !this.structureToggle) return;
 
         this.colorButton.addEventListener("click", () => {
-            console.log("Color Cycle Clicked");
+            this.cycleColors()
         });
 
         this.structureToggle.addEventListener("click", () => {
-            console.log("Structure Toggle Clicked");
+            this.toggleStructures();
         });
     }
 
@@ -140,13 +135,34 @@ class ColorPlayground {
     }
 
     draw() {
-        const boxFractions: number[] = [0.33, 0.67];
-        const innerBoxes: innerBox[] = this.drawBackgroundBoxes(boxFractions);
-        const colors: Colord[] = this.pushColors();
+        this.innerBoxes = this.drawBackgroundBoxes(this.boxFractions);
+        this.numColorRows = Math.min(Math.floor(this.innerBoxes[0].height / 40), 16);
+        this.terrain = this.generateTerrain(this.innerBoxes[1]);
+        this.drawPerlinTerrain(this.innerBoxes[1]);
+        this.drawLeftColors(this.innerBoxes[0], this.colors!);
+        this.drawRightColors(this.innerBoxes[1], this.colors!);
+    }
 
-        this.terrain = this.generateTerrain(innerBoxes[1]);
-        this.drawPerlinTerrain(innerBoxes[1]);
-        this.drawColors(innerBoxes[0], colors);
+    generateTerrain(innerBox: innerBox): number[] {
+        const width = innerBox.width;
+        const height = innerBox.height;
+        const size = width*height;
+        let terrain: number[] = new Array<number>(size).fill(0);
+
+        for(let x = 0; x < width; x++){
+            for(let y = 0; y < height; y++){
+                const index = y*width + x;
+                terrain[index] = Math.floor(Math.abs(this.perlin.perlin2(x / 50, y / 50)) * 50);
+            }
+        }
+        return terrain;
+    }
+
+    redraw() {
+        this.drawBackgroundBoxes(this.boxFractions);
+        this.drawPerlinTerrain(this.innerBoxes![1]);
+        this.drawLeftColors(this.innerBoxes![0], this.colors!);
+        this.drawRightColors(this.innerBoxes![1], this.colors!);
     }
 
     drawBackgroundBoxes(boxFractions: number[]): innerBox[] {
@@ -217,10 +233,14 @@ class ColorPlayground {
         this.ctx.putImageData(imageData, innerBox.x, innerBox.y);
     }
 
+    toggleStructures() {
 
+    }
 
     cycleColors(): void {
-
+        this.colorIDX += this.numColorRows!;
+        this.colorIDX %= this.colors!.length;
+        this.redraw();
     }
 
     getTerrainColor(mag: number): Colord {
@@ -245,22 +265,41 @@ class ColorPlayground {
         }
     }
 
-    drawColors(innerBox: innerBox, colors: Colord[]) {
-        const heights = innerBox.height / colors.length;
+    drawLeftColors(innerBox: innerBox, colors: Colord[]) {
+        const heights = innerBox.height / this.numColorRows!;
         const widths = innerBox.width / 4;
         const yOffset = innerBox.y;
         const xOffset = innerBox.x;
 
-        colors.forEach((color: Colord, index: number) =>{
+        let count = 0;
+        for(let i=this.colorIDX; i<this.colorIDX+this.numColorRows!; i++) {
+
+            const color = colors[i % this.colors!.length];
             const light = this.darken(color, 0.125);
             const medium = this.darken(color, 0.2);
             const dark = this.darken(color, 0.4);
 
-            this.drawRect(xOffset, yOffset + index*heights, widths, heights, color);
-            this.drawRect(xOffset+widths, yOffset + index*heights, widths, heights, light);
-            this.drawRect(xOffset+2*widths, yOffset + index*heights, widths, heights, medium);
-            this.drawRect(xOffset+3*widths, yOffset + index*heights, widths, heights, dark);
-        });
+            this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
+            this.drawRect(xOffset + widths, yOffset + count * heights, widths, heights, light);
+            this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, medium);
+            this.drawRect(xOffset + 3 * widths, yOffset + count * heights, widths, heights, dark);
+            count++;
+        }
+    }
+
+    drawRightColors(innerBox: innerBox, colors: Colord[]){
+        const heights = innerBox.height / this.numColorRows!;
+        const widths = innerBox.width;
+        const yOffset = innerBox.y;
+        const xOffset = innerBox.x;
+
+        let count = 0;
+        for(let i= this.colorIDX; i<this.colorIDX+this.numColorRows!; i++) {
+            let color = colors[i % this.colors!.length];
+            color = color.alpha(150/255);
+            this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
+            count++;
+        }
     }
 
     drawRect(x: number,
