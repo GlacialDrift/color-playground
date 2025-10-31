@@ -1,5 +1,6 @@
 import type {innerBox} from "./interfaces.ts";
 import {colord, Colord} from "colord";
+import Perlin from "./perlin.ts";
 
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;
@@ -8,6 +9,8 @@ class ColorPlayground {
     private readonly innerSpacer: number;
     private colorButton: HTMLButtonElement | undefined;
     private structureToggle: HTMLButtonElement | undefined;
+    private perlin: Perlin;
+    private terrain: number[] | undefined;
 
     constructor(){
 
@@ -17,14 +20,32 @@ class ColorPlayground {
         const div = document.getElementById("button-container") as HTMLElement;
         const height = div.offsetHeight;
 
-        this.canvas.width = window.innerWidth*0.98;
-        this.canvas.height = (window.innerHeight - height) * 0.96;
+        this.canvas.width = Math.floor(window.innerWidth*0.98);
+        this.canvas.height = Math.floor((window.innerHeight - height) * 0.96);
 
         this.ctx = this.canvas.getContext("2d");
         this.spacer = 10;
         this.innerSpacer = 2/3*this.spacer;
 
+        this.perlin = new Perlin(Math.random());
+
         this.initialize();
+    }
+
+    generateTerrain(innerBox: innerBox): number[] {
+        const width = innerBox.width;
+        const height = innerBox.height;
+        console.log(width, height);
+        const size = width*height;
+        let terrain: number[] = new Array<number>(size).fill(0);
+
+        for(let x = 0; x < width; x++){
+            for(let y = 0; y < height; y++){
+                const index = y*width + x;
+                terrain[index] = Math.floor(Math.abs(this.perlin.perlin2(x / 50, y / 50)) * 50);
+            }
+        }
+        return terrain;
     }
 
     initialize(){
@@ -123,8 +144,8 @@ class ColorPlayground {
         const innerBoxes: innerBox[] = this.drawBackgroundBoxes(boxFractions);
         const colors: Colord[] = this.pushColors();
 
-        this.drawTerrain(innerBoxes[1]);
-
+        this.terrain = this.generateTerrain(innerBoxes[1]);
+        this.drawPerlinTerrain(innerBoxes[1]);
         this.drawColors(innerBoxes[0], colors);
     }
 
@@ -159,8 +180,8 @@ class ColorPlayground {
             const innerBox = {
                 x : xOffset + this.innerSpacer,
                 y : yOffset + this.innerSpacer,
-                width : boxWidth - 2*this.innerSpacer,
-                height : boxHeight - 2*this.innerSpacer,
+                width : Math.floor(boxWidth - 2*this.innerSpacer),
+                height : Math.floor(boxHeight - 2*this.innerSpacer),
             };
 
             innerBoxes.push(innerBox);
@@ -172,18 +193,31 @@ class ColorPlayground {
         return innerBoxes;
     }
 
-    drawTerrain(innerBox: innerBox){
-        const heights = innerBox.height;
-        const widths = innerBox.width / 32;
-        const yOffset = innerBox.y;
-        let xOffset = innerBox.x;
+    drawPerlinTerrain(innerBox: innerBox){
+        if(!this.ctx) throw new Error("Can't get Canvas Context");
+        if(!this.terrain) throw new Error("No Terrain has been generated");
+        const width = innerBox.width;
+        const height = innerBox.height;
 
-        for(let i=0; i<32; i++){
-            const terrainColor = this.getTerrainColor(i);
-            this.drawRect(xOffset, yOffset, widths, heights, terrainColor);
-            xOffset += widths;
+        const imageData = this.ctx?.getImageData(innerBox.x,innerBox.y, width, height);
+        let data = imageData.data;
+
+        for(let x=0; x<width; x++){
+            for(let y=0; y<height; y++){
+                const index = (y*width + x)
+                const terrainVal = this.terrain[index]
+                const terrainColor = this.getTerrainColor(terrainVal).toRgb();
+                const offset = index*4;
+                data[offset] = terrainColor.r;
+                data[offset + 1] = terrainColor.g;
+                data[offset + 2] = terrainColor.b;
+                data[offset + 3] = 150;
+            }
         }
+        this.ctx.putImageData(imageData, innerBox.x, innerBox.y);
     }
+
+
 
     cycleColors(): void {
 
