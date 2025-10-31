@@ -18,6 +18,7 @@ class ColorPlayground {
     private colorIDX: number;
     private numColorRows: number | undefined;
     private showColorStrings: boolean;
+    private showStructures: boolean;
 
     constructor(){
 
@@ -41,6 +42,7 @@ class ColorPlayground {
         this.colors = this.pushColors();
         this.perlin = new Perlin(Math.random());
         this.showColorStrings = true;
+        this.showStructures = false;
 
         this.initialize();
     }
@@ -59,14 +61,14 @@ class ColorPlayground {
     }
 
     addEventListeners() {
-        if(!this.colorButton || !this.structureToggle) return;
 
-        this.colorButton.addEventListener("click", () => {
+        this.colorButton!.addEventListener("click", () => {
             this.cycleColors()
         });
 
-        this.structureToggle.addEventListener("click", () => {
-            this.toggleStructures();
+        this.structureToggle!.addEventListener("click", () => {
+            this.showStructures = !this.showStructures;
+            this.redraw();
         });
 
         this.colorToggle?.addEventListener("click", () => {
@@ -150,6 +152,7 @@ class ColorPlayground {
         this.drawPerlinTerrain(this.innerBoxes[1]);
         this.drawLeftColors(this.innerBoxes[0], this.colors!);
         this.drawRightColors(this.innerBoxes[1], this.colors!);
+        this.drawStructures(this.innerBoxes[1], this.colors!);
     }
 
     generateTerrain(innerBox: innerBox): number[] {
@@ -172,6 +175,7 @@ class ColorPlayground {
         this.drawPerlinTerrain(this.innerBoxes![1]);
         this.drawLeftColors(this.innerBoxes![0], this.colors!);
         this.drawRightColors(this.innerBoxes![1], this.colors!);
+        this.drawStructures(this.innerBoxes![1], this.colors!);
     }
 
     drawBackgroundBoxes(boxFractions: number[]): innerBox[] {
@@ -240,10 +244,6 @@ class ColorPlayground {
             }
         }
         this.ctx.putImageData(imageData, innerBox.x, innerBox.y);
-    }
-
-    toggleStructures() {
-
     }
 
     cycleColors(): void {
@@ -318,6 +318,13 @@ class ColorPlayground {
             }
             count++;
         }
+    }
+
+    drawStructures(innerBox: innerBox, colors: Colord[]) {
+        const heights = innerBox.height / this.numColorRows!;
+        const widths = innerBox.width;
+        const yOffset = innerBox.y + heights/2;
+        const xOffset = innerBox.x;
     }
 
     writeColor(x:number, y:number, color: Colord | string, alignment?: CanvasTextAlign){
