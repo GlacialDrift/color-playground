@@ -9,6 +9,7 @@ class ColorPlayground {
     private readonly innerSpacer: number;
     private colorButton: HTMLButtonElement | undefined;
     private structureToggle: HTMLButtonElement | undefined;
+    private colorToggle: HTMLButtonElement | undefined;
     private perlin: Perlin;
     private terrain: number[] | undefined;
     private readonly boxFractions: number[];
@@ -16,6 +17,7 @@ class ColorPlayground {
     private colors: Colord[] | undefined;
     private colorIDX: number;
     private numColorRows: number | undefined;
+    private showColorStrings: boolean;
 
     constructor(){
 
@@ -38,6 +40,7 @@ class ColorPlayground {
         this.boxFractions = [0.33, 0.67];
         this.colors = this.pushColors();
         this.perlin = new Perlin(Math.random());
+        this.showColorStrings = true;
 
         this.initialize();
     }
@@ -49,6 +52,7 @@ class ColorPlayground {
 
         this.colorButton = document.getElementById("cycle-colors") as HTMLButtonElement;
         this.structureToggle = document.getElementById("structure-toggle") as HTMLButtonElement;
+        this.colorToggle = document.getElementById("color-toggle") as HTMLButtonElement;
 
         this.addEventListeners();
         this.draw();
@@ -63,6 +67,11 @@ class ColorPlayground {
 
         this.structureToggle.addEventListener("click", () => {
             this.toggleStructures();
+        });
+
+        this.colorToggle?.addEventListener("click", () => {
+            this.showColorStrings = !this.showColorStrings;
+            this.redraw();
         });
     }
 
@@ -283,6 +292,12 @@ class ColorPlayground {
             this.drawRect(xOffset + widths, yOffset + count * heights, widths, heights, light);
             this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, medium);
             this.drawRect(xOffset + 3 * widths, yOffset + count * heights, widths, heights, dark);
+            if(this.showColorStrings) {
+                this.writeColor(xOffset + widths / 2, yOffset + count * heights + heights / 2, color);
+                this.writeColor(xOffset + widths / 2 + widths, yOffset + count * heights + heights / 2, light);
+                this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, medium);
+                this.writeColor(xOffset + widths / 2 + 3 * widths, yOffset + count * heights + heights / 2, dark);
+            }
             count++;
         }
     }
@@ -298,8 +313,24 @@ class ColorPlayground {
             let color = colors[i % this.colors!.length];
             color = color.alpha(150/255);
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
+            if(this.showColorStrings) {
+                this.writeColor(xOffset+10, yOffset+count*heights + heights/2, color, "start");
+            }
             count++;
         }
+    }
+
+    writeColor(x:number, y:number, color: Colord | string, alignment?: CanvasTextAlign){
+        let text = (color instanceof Colord) ? color.toRgbString() : color;
+        text = text.replaceAll(" ", "");
+        const ctx = this.ctx;
+        if(!ctx) throw new Error("Can't write color");
+
+        ctx.font = "12px Arial";
+        ctx.fillStyle ="black";
+        ctx.textAlign = alignment ?? "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, x, y);
     }
 
     drawRect(x: number,
