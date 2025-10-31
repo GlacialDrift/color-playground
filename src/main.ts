@@ -2,16 +2,23 @@ import type {innerBox} from "./interfaces.ts";
 import {colord, Colord} from "colord";
 
 class ColorPlayground {
-    private readonly canvas: HTMLCanvasElement | null;
+    private readonly canvas: HTMLCanvasElement;
     private readonly ctx: CanvasRenderingContext2D | null;
     private readonly spacer: number;
     private readonly innerSpacer: number;
+    private colorButton: HTMLButtonElement | undefined;
+    private structureToggle: HTMLButtonElement | undefined;
 
     constructor(){
+
         this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
         if(!this.canvas) throw new Error("Cannot get Canvas Element");
+
+        const div = document.getElementById("button-container") as HTMLElement;
+        const height = div.offsetHeight;
+
         this.canvas.width = window.innerWidth*0.98;
-        this.canvas.height = window.innerHeight*0.96;
+        this.canvas.height = (window.innerHeight - height) * 0.96;
 
         this.ctx = this.canvas.getContext("2d");
         this.spacer = 10;
@@ -24,6 +31,23 @@ class ColorPlayground {
         const currentDate: Date = new Date();
         const formattedTimestamp: string = currentDate.toLocaleTimeString();
         console.log(`Last Reloaded: ${formattedTimestamp}`);
+
+        this.colorButton = document.getElementById("cycle-colors") as HTMLButtonElement;
+        this.structureToggle = document.getElementById("structure-toggle") as HTMLButtonElement;
+
+        this.addEventListeners();
+    }
+
+    addEventListeners() {
+        if(!this.colorButton || !this.structureToggle) return;
+
+        this.colorButton.addEventListener("click", () => {
+            console.log("Color Cycle Clicked");
+        });
+
+        this.structureToggle.addEventListener("click", () => {
+            console.log("Structure Toggle Clicked");
+        });
     }
 
     pushColors(): Colord[] {
@@ -96,13 +120,15 @@ class ColorPlayground {
 
     draw() {
         const boxFractions: number[] = [0.33, 0.67];
-        const innerBoxes: innerBox[] = this.backgroundBoxes(boxFractions);
+        const innerBoxes: innerBox[] = this.drawBackgroundBoxes(boxFractions);
         const colors: Colord[] = this.pushColors();
+
+        this.drawTerrain(innerBoxes[1]);
 
         this.drawColors(innerBoxes[0], colors);
     }
 
-    backgroundBoxes(boxFractions: number[]): innerBox[] {
+    drawBackgroundBoxes(boxFractions: number[]): innerBox[] {
         const ctx = this.ctx;
         if(!ctx) throw new Error("Can't get Canvas Context");
 
@@ -119,17 +145,16 @@ class ColorPlayground {
         const size = boxFractions.length;
         let innerBoxes: innerBox[] = [];
 
-        boxFractions.forEach((boxFraction: number, index: number) => {
+        boxFractions.forEach((boxFraction: number) => {
             const xOffset = x + spacer;
             const yOffset = spacer;
             const boxWidth = (width - (size+1) * spacer) * boxFraction;
 
-            if(index !== 2){
-                ctx.beginPath();
-                ctx.roundRect(xOffset, yOffset, boxWidth, boxHeight, rectRadius);
-                ctx.stroke();
-                ctx.fill();
-            }
+            const fill = colord("#ffffff");
+            const stroke = colord("#000000");
+
+            this.drawRoundedRect(xOffset, yOffset, boxWidth, boxHeight, rectRadius, fill, stroke);
+
 
             const innerBox = {
                 x : xOffset + this.innerSpacer,
@@ -145,6 +170,45 @@ class ColorPlayground {
         });
 
         return innerBoxes;
+    }
+
+    drawTerrain(innerBox: innerBox){
+        const heights = innerBox.height;
+        const widths = innerBox.width / 32;
+        const yOffset = innerBox.y;
+        let xOffset = innerBox.x;
+
+        for(let i=0; i<32; i++){
+            const terrainColor = this.getTerrainColor(i);
+            this.drawRect(xOffset, yOffset, widths, heights, terrainColor);
+            xOffset += widths;
+        }
+    }
+
+    cycleColors(): void {
+
+    }
+
+    getTerrainColor(mag: number): Colord {
+        if(mag<10) {
+            return colord({
+                r: 190,
+                g: 220 - 2 * mag,
+                b: 138,
+            });
+        } else if(mag <20) {
+            return colord({
+                r: 200 + 2 * mag,
+                g: 183 + 2 * mag,
+                b: 138 + 2 * mag,
+            });
+        }else{
+            return colord({
+                r: 230 + mag / 2,
+                g: 230 + mag / 2,
+                b: 230 + mag / 2,
+            });
+        }
     }
 
     drawColors(innerBox: innerBox, colors: Colord[]) {
@@ -180,8 +244,7 @@ class ColorPlayground {
         ctx.fillRect(x,y,width,height);
     }
 
-    drawRoundedRect(ctx: CanvasRenderingContext2D,
-                    x: number,
+    drawRoundedRect(x: number,
                     y: number,
                     width: number,
                     height: number,
@@ -189,6 +252,9 @@ class ColorPlayground {
                     fill?: Colord | string | CanvasGradient | CanvasPattern,
                     stroke?: Colord | string | CanvasGradient | CanvasPattern
     ) {
+        const ctx = this.ctx;
+        if(!ctx) throw new Error("Can't get Canvas Context");
+
         ctx.fillStyle = (fill instanceof Colord) ? fill.toRgbString() : (fill ?? "#00000000");
         ctx.strokeStyle = (stroke instanceof Colord) ? stroke.toRgbString() : (stroke ?? "#00000000");
         ctx.beginPath();
@@ -197,6 +263,7 @@ class ColorPlayground {
         ctx.arcTo(x + width, y + height, x + width, y + height - radius, radius);
         ctx.arcTo(x + width, y, x + width - radius, y, radius);
         ctx.arcTo(x, y, x, y + radius, radius);
+        ctx.fill();
         ctx.stroke();
     }
 

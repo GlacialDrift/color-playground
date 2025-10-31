@@ -3,11 +3,33 @@
 
     <head>
         <style>
-            canvas {
+            .canvas {
                 background-color: gainsboro;
                 border: 1px solid black;
                 border-radius: 5px;
                 box-shadow: 2px 2px 6px silver;
+            }
+            .button-container {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            .button{
+                color: black;
+                background-color: gainsboro;
+                border: 1px solid black;
+                border-radius: 3px;
+                padding: 5px 10px;
+                text-align: center;
+                font-size: 16px;
+                margin: 4px;
+                cursor: pointer;
+            }
+            .button:hover{
+                background-color: whitesmoke;
+            }
+            .button:active{
+                background-color: gainsboro;
             }
         </style>
         <meta charset="UTF-8" />
@@ -16,8 +38,14 @@
         <title>color-playground</title>
     </head>
     <body>
-        <div id="app"></div>
-        <canvas id="canvas" class="canvas"></canvas>
-        <script type="module" src="/src/main.ts"></script>
+        <div class="button-container" id="button-container">
+            <button type="button" class="button" id="structure-toggle">Toggle Structure Display</button>
+            <button type="button" class="button" id="cycle-colors">Cycle to Next Set of Colors</button>
+        </div>
+        <div id="app">
+            <canvas id="canvas" class="canvas"></canvas>
+            <script type="module" src="/src/main.ts"></script>
+        </div>
     </body>
 </html>
+
