@@ -11,6 +11,7 @@ export interface Settings{
     perlin: Perlin;
     showColorStrings: boolean;
     showStructures: boolean;
+    showColors: boolean;
     numColorRows: number;
 }
 
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
     perlin: new Perlin(Math.random()),
     showColorStrings: true,
     showStructures: false,
+    showColors: true,
     numColorRows: 16,
 };
 

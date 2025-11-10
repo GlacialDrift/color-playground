@@ -39,14 +39,16 @@
     </head>
     <body>
         <div class="button-container" id="button-container">
+            <button type="button" class="button" id="color-toggle">Toggle Colors On/Off</button>
             <button type="button" class="button" id="structure-toggle">Toggle Structure Display</button>
             <button type="button" class="button" id="cycle-colors">Cycle to Next Set of Colors</button>
-            <button type="button" class="button" id="color-toggle">Toggle Color Strings</button>
+            <button type="button" class="button" id="color-string-toggle">Toggle Color Strings</button>
         </div>
         <div id="app">
-            <canvas id="canvas" class="canvas"></canvas>
-            <script type="module" src="/src/main.ts"></script>
+            <canvas id="background" class="canvas"></canvas>
+            <canvas id="foreground" class="canvas"></canvas>
         </div>
+        <script type="module" src="/src/main.ts"></script>
     </body>
 </html>
 

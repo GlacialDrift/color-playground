@@ -5,16 +5,17 @@ import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;
     private readonly ctx: CanvasRenderingContext2D;
+    private colorToggle: HTMLButtonElement | undefined;
     private colorButton: HTMLButtonElement | undefined;
     private structureToggle: HTMLButtonElement | undefined;
-    private colorToggle: HTMLButtonElement | undefined;
+    private colorStringToggle: HTMLButtonElement | undefined;
     private terrain: number[] | undefined;
     private innerBoxes: innerBox[] | undefined;
     private settings: Settings;
 
     constructor(){
 
-        this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        this.canvas = document.getElementById("background") as HTMLCanvasElement;
         if(!this.canvas) throw new Error("Cannot get Canvas Element");
 
         const div = document.getElementById("button-container") as HTMLElement;
@@ -37,6 +38,7 @@ class ColorPlayground {
 
         this.colorButton = document.getElementById("cycle-colors") as HTMLButtonElement;
         this.structureToggle = document.getElementById("structure-toggle") as HTMLButtonElement;
+        this.colorStringToggle = document.getElementById("color-string-toggle") as HTMLButtonElement;
         this.colorToggle = document.getElementById("color-toggle") as HTMLButtonElement;
 
         this.addEventListeners();
@@ -54,10 +56,15 @@ class ColorPlayground {
             this.redraw();
         });
 
-        this.colorToggle?.addEventListener("click", () => {
+        this.colorStringToggle!.addEventListener("click", () => {
             this.settings.showColorStrings = !this.settings.showColorStrings;
             this.redraw();
         });
+
+        this.colorToggle!.addEventListener("click", () => {
+            this.settings.showColors = !this.settings.showColors;
+            this.redraw();
+        })
     }
 
     draw() {
@@ -65,8 +72,10 @@ class ColorPlayground {
         this.settings.numColorRows = Math.min(Math.floor(this.innerBoxes[0].height / 40), 16);
         this.terrain = this.generateTerrain(this.innerBoxes[1]);
         this.drawPerlinTerrain(this.innerBoxes[1]);
-        this.drawLeftColors(this.innerBoxes[0], this.settings.colors);
-        this.drawRightColors(this.innerBoxes[1], this.settings.colors);
+        if(this.settings.showColors) {
+            this.drawLeftColors(this.innerBoxes[0], this.settings.colors);
+            this.drawRightColors(this.innerBoxes[1], this.settings.colors);
+        }
     }
 
     generateTerrain(innerBox: innerBox): number[] {
@@ -87,8 +96,10 @@ class ColorPlayground {
     redraw() {
         this.drawBackgroundBoxes(this.settings.boxFractions);
         this.drawPerlinTerrain(this.innerBoxes![1]);
-        this.drawLeftColors(this.innerBoxes![0], this.settings.colors);
-        this.drawRightColors(this.innerBoxes![1], this.settings.colors);
+        if(this.settings.showColors) {
+            this.drawLeftColors(this.innerBoxes![0], this.settings.colors);
+            this.drawRightColors(this.innerBoxes![1], this.settings.colors);
+        }
     }
 
     drawBackgroundBoxes(boxFractions: number[]): innerBox[] {
@@ -97,11 +108,11 @@ class ColorPlayground {
         ctx.fillStyle = 'white';
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 1;
+        const offset = 0.5;
         const width = ctx.canvas.width;
         const height = ctx.canvas.height;
         const spacer = this.settings.spacer;
-        const rectRadius = 5;
-        const boxHeight = (height - 2*spacer);
+        const boxHeight = Math.floor(height - 2*spacer);
 
         let x = 0;
         const size = boxFractions.length;
@@ -110,12 +121,15 @@ class ColorPlayground {
         boxFractions.forEach((boxFraction: number) => {
             const xOffset = x + spacer;
             const yOffset = spacer;
-            const boxWidth = (width - (size+1) * spacer) * boxFraction;
+            const boxWidth = Math.floor((width - (size+1) * spacer) * boxFraction);
 
             const fill = colord("#ffffff");
             const stroke = colord("#000000");
+            ctx.fillStyle = fill.toString();
+            ctx.strokeStyle = stroke.toString();
 
-            this.drawRoundedRect(xOffset, yOffset, boxWidth, boxHeight, rectRadius, fill, stroke);
+            ctx.fillRect(xOffset-offset, yOffset-offset, boxWidth, boxHeight);
+            ctx.strokeRect(xOffset-offset, yOffset-offset, boxWidth, boxHeight);
 
 
             const innerBox = {
