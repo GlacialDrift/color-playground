@@ -13,6 +13,8 @@ export interface Settings{
     showStructures: boolean;
     showColors: boolean;
     numColorRows: number;
+    canvasHeight: number;
+    canvasWidth: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +28,8 @@ export const DEFAULT_SETTINGS: Settings = {
     showStructures: false,
     showColors: true,
     numColorRows: 16,
+    canvasHeight: 0,
+    canvasWidth: 0,
 };
 
 

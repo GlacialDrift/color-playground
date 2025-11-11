@@ -15,24 +15,16 @@ class ColorPlayground {
     private settings: Settings;
 
     constructor(){
-
-        this.canvas = document.getElementById("background") as HTMLCanvasElement;
+        this.settings = DEFAULT_SETTINGS;
+        this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
         if(!this.canvas) throw new Error("Cannot get Canvas Element");
 
-        const div = document.getElementById("button-container") as HTMLElement;
-        const height = div.offsetHeight;
-        this.canvas.width = Math.floor(window.innerWidth*0.98);
-        this.canvas.height = Math.floor((window.innerHeight - height) * 0.96);
+        this.resize();
 
         const context = this.canvas.getContext("2d");
         if(!context) throw new Error("Could not get context");
         this.ctx = context;
 
-        this.settings = DEFAULT_SETTINGS;
-        this.initialize();
-    }
-
-    initialize(){
         const currentDate: Date = new Date();
         const formattedTimestamp: string = currentDate.toLocaleTimeString();
         console.log(`Last Reloaded: ${formattedTimestamp}`);
@@ -43,25 +35,34 @@ class ColorPlayground {
         this.colorToggle = document.getElementById("color-toggle") as HTMLButtonElement;
 
         this.addEventListeners();
-        this.draw();
+    }
+
+    resize(){
+        const div = document.getElementById("button-container") as HTMLElement;
+        const height = div.offsetHeight;
+        this.settings.canvasWidth = Math.floor(window.innerWidth*0.98);
+        this.settings.canvasHeight = Math.floor((window.innerHeight - height) * 0.96);
+        this.canvas.height = this.settings.canvasHeight;
+        this.canvas.width = this.settings.canvasWidth;
     }
 
     addEventListeners() {
 
+        window.addEventListener("resize", () => {
+            this.resize();
+            this.draw();
+        });
         this.colorButton!.addEventListener("click", () => {
             this.cycleColors()
         });
-
         this.structureToggle!.addEventListener("click", () => {
             this.settings.showStructures = !this.settings.showStructures;
             this.redraw();
         });
-
         this.colorStringToggle!.addEventListener("click", () => {
             this.settings.showColorStrings = !this.settings.showColorStrings;
             this.redraw();
         });
-
         this.colorToggle!.addEventListener("click", () => {
             this.settings.showColors = !this.settings.showColors;
             this.redraw();
