@@ -2,6 +2,7 @@
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
 import type {innerBox} from "./Utils.ts";
+import {createIcon} from "./IconDrawing.ts";
 
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;
@@ -78,6 +79,20 @@ class ColorPlayground {
             this.drawLeftColors(this.innerBoxes[0], this.settings.colors);
             this.drawRightColors(this.innerBoxes[1], this.settings.colors);
         }
+        if(this.settings.showStructures){
+            this.drawStructures(this.innerBoxes[1], this.settings.colors);
+        }
+    }
+
+    drawStructures(innerBox: innerBox, colors: Colord[]){
+
+        const yOffset = innerBox.y;
+        const xOffset = innerBox.x;
+
+        const color = colors[0];
+        const border = color.darken(0.125);
+        const icon = createIcon(color, border, "City");
+        this.ctx.drawImage(icon, xOffset+20, yOffset+10);
     }
 
     generateTerrain(innerBox: innerBox): number[] {
@@ -101,6 +116,9 @@ class ColorPlayground {
         if(this.settings.showColors) {
             this.drawLeftColors(this.innerBoxes![0], this.settings.colors);
             this.drawRightColors(this.innerBoxes![1], this.settings.colors);
+        }
+        if(this.settings.showStructures){
+            this.drawStructures(this.innerBoxes![1], this.settings.colors);
         }
     }
 
@@ -212,8 +230,8 @@ class ColorPlayground {
         for(let i=this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
 
             const color = colors[i % this.settings.colors.length];
-            const light = this.darken(color, 0.125);
-            const medium = this.darken(color, 0.2);
+            const light = this.lighten(color, 0.13).alpha(0.65);
+            const medium = this.darken(color, 0.15);
             const dark = this.darken(color, 0.4);
 
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
@@ -238,9 +256,9 @@ class ColorPlayground {
 
         let count = 0;
         for(let i= this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
-            let color = colors[i % this.settings.colors.length];
-            color = color.alpha(150/255);
-            this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
+            const color = colors[i % this.settings.colors.length].alpha(150/255);
+            const border = colors[i % this.settings.colors.length].darken(0.125);
+            this.drawRect(xOffset, yOffset + count * heights, widths, heights, color, border);
             if(this.settings.showColorStrings) {
                 this.writeColor(xOffset+10, yOffset+count*heights + heights/2, color, "start");
             }
@@ -274,6 +292,7 @@ class ColorPlayground {
         ctx.strokeStyle = (stroke instanceof Colord) ? stroke.toRgbString() : (stroke ?? "#000000");
 
         ctx.fillRect(x,y,width,height);
+        ctx.strokeRect(x, y, width, height);
     }
 
     drawRoundedRect(x: number,

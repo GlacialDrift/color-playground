@@ -18,14 +18,13 @@ export type ShapeType =
     | "circle";
 
 // @ts-ignore
-export enum UnitType {
-    City = "City",
-    Factory = "Factory",
-    DefensePost = "DefensePost",
-    Port = "Port",
-    MissileSilo = "MissileSilo",
-    SAMLauncher = "SAMLauncher",
-}
+export type UnitType =
+    | "City"
+    | "Factory"
+    | "DefensePost"
+    | "Port"
+    | "MissileSilo"
+    | "SAMLauncher";
 
 export const STRUCTURE_SHAPES: Partial<Record<UnitType, ShapeType>> = {
     City: "circle",
@@ -41,13 +40,19 @@ interface StructureInfo {
     image: HTMLImageElement | null;
 }
 
+function makeImage(src: string): HTMLImageElement {
+    const img = new Image();
+    img.src = src;
+    return img;
+}
+
 const structuresInfos: Map<UnitType, StructureInfo> = new Map([
-    [UnitType.City,        { iconPath: cityIcon, image: null }],
-    [UnitType.Factory,     { iconPath: factoryIcon, image: null }],
-    [UnitType.DefensePost, { iconPath: defenseIcon, image: null }],
-    [UnitType.Port,        { iconPath: portIcon, image: null }],
-    [UnitType.MissileSilo, { iconPath: siloIcon, image: null }],
-    [UnitType.SAMLauncher, { iconPath: SAMIcon, image: null }],
+    ["City",        { iconPath: cityIcon, image: makeImage(cityIcon) }],
+    ["Factory",     { iconPath: factoryIcon, image: makeImage(factoryIcon) }],
+    ["DefensePost", { iconPath: defenseIcon, image: makeImage(defenseIcon) }],
+    ["Port",        { iconPath: portIcon, image: makeImage(portIcon) }],
+    ["MissileSilo", { iconPath: siloIcon, image: makeImage(siloIcon) }],
+    ["SAMLauncher", { iconPath: SAMIcon, image: makeImage(SAMIcon) }],
 ]);
 
 export const ICON_SIZE = {
@@ -171,22 +176,6 @@ export function createIcon(
         default:
             throw new Error(`Unknown shape: ${shape}`);
     }
-
-    const cityImg = new Image();
-    cityImg.src = cityIcon;
-    const portImg = new Image();
-    portImg.src = portIcon;
-    const factoryImg = new Image();
-    factoryImg.src = factoryIcon;
-    const defenseImg = new Image();
-    defenseImg.src = defenseIcon;
-    const siloImg = new Image();
-    siloImg.src = siloIcon;
-    const SAMImg = new Image();
-    SAMImg.src = SAMIcon;
-
-
-
 
     const structureInfo = structuresInfos.get(structureType);
 
