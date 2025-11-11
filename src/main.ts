@@ -1,7 +1,7 @@
 
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
-import {ICON_SIZE, type innerBox} from "./Utils.ts";
+import {ICON_SIZE, type innerBox, type UnitType} from "./Utils.ts";
 import {createIcon} from "./IconDrawing.ts";
 
 class ColorPlayground {
@@ -267,10 +267,58 @@ class ColorPlayground {
             const bc = this.borderColor(colors[i % this.settings.colors.length]);
 
             this.settings.units.forEach((unit, j) => {
-                const icon = createIcon(tc, bc, unit);
-                const shift = unit==="Port" ?  ICON_SIZE.pentagon/2 : ICON_SIZE.circle/2;
-                this.ctx.drawImage(icon, xOffset+deltaX*j-shift, yOffset + heights*count-shift);
+                this.drawIcon(unit, tc, bc, xOffset + deltaX*j, yOffset + heights*count);
             })
+            count++;
+        }
+    }
+
+    drawIcon(unit: UnitType, territory: Colord, border: Colord, xPos: number, yPos: number){
+        const icons = createIcon(territory, border, unit);
+        let iconWidth = 0;
+        let x = xPos;
+        let y = yPos;
+
+        switch(unit){
+            case "City":
+                iconWidth = ICON_SIZE.circle;
+                break;
+            case "Factory":
+                iconWidth = ICON_SIZE.circle;
+                break;
+            case "Port":
+                iconWidth = ICON_SIZE.pentagon;
+                break;
+            case "DefensePost":
+                iconWidth = ICON_SIZE.octagon;
+                break;
+            case "MissileSilo":
+                iconWidth = ICON_SIZE.triangle;
+                break;
+            case "SAMLauncher":
+                iconWidth = ICON_SIZE.square;
+                break;
+            default:
+                throw new Error(`Unknown unit: ${unit}`);
+        }
+
+        const iconCount = icons!.length;
+        const spacer = 2;
+        const totalSpacer = iconWidth + 2*spacer;
+        let count = 1;
+        x -= iconWidth / 2;
+        y -= iconWidth / 2;
+
+        if(iconCount%2 && iconCount > 0){
+            this.ctx.drawImage(icons[0], x, y);
+        }else if (iconCount > 1) {
+            this.ctx.drawImage(icons[0], x + totalSpacer / 2, y);
+            this.ctx.drawImage(icons[1], x - totalSpacer / 2, y);
+            count += 0.5;
+        }
+        for (let i = count===1 ? 1 : 2 ; i<iconCount; i+=2){
+            this.ctx.drawImage(icons[i], x + totalSpacer*count, y);
+            if(iconCount > i+1) this.ctx.drawImage(icons[i+1], x - totalSpacer*count, y);
             count++;
         }
     }
@@ -298,8 +346,6 @@ class ColorPlayground {
                 flag = textWidth < width-2;
             }
         } while(!flag);
-
-        console.log(fontsize, textWidth);
 
         ctx.fillText(text, x, y);
     }

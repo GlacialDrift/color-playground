@@ -30,7 +30,7 @@ export function createIcon(
     borderColor: Colord,
     structureType: UnitType,
     renderIcon: boolean = true,
-): HTMLCanvasElement{
+): HTMLCanvasElement[] {
     const structureCanvas = document.createElement("canvas");
     const shape = STRUCTURE_SHAPES[structureType]!;
     let iconSize = ICON_SIZE[shape];
@@ -157,7 +157,7 @@ export function createIcon(
         );
     }
 
-    return structureCanvas;
+    return [structureCanvas, structureCanvas, structureCanvas, structureCanvas, structureCanvas];
 }
 
 function getImageColored(
