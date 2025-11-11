@@ -6,39 +6,9 @@ import portIcon from "../resources/AnchorIcon.png";
 import siloIcon from "../resources/MissileSiloUnit.png";
 import SAMIcon from "../resources/SamLauncherUnit.png";
 import defenseIcon from "../resources/ShieldIcon.png";
-
+import {ICON_SIZE, STRUCTURE_SHAPES, type StructureInfo, type UnitType} from "./Utils.ts";
 
 extend([a11yPlugin]);
-
-export type ShapeType =
-    | "triangle"
-    | "square"
-    | "pentagon"
-    | "octagon"
-    | "circle";
-
-// @ts-ignore
-export type UnitType =
-    | "City"
-    | "Factory"
-    | "DefensePost"
-    | "Port"
-    | "MissileSilo"
-    | "SAMLauncher";
-
-export const STRUCTURE_SHAPES: Partial<Record<UnitType, ShapeType>> = {
-    City: "circle",
-    Port: "pentagon",
-    Factory: "circle",
-    DefensePost: "octagon",
-    SAMLauncher: "square",
-    MissileSilo: "triangle",
-};
-
-interface StructureInfo {
-    iconPath: string;
-    image: HTMLImageElement | null;
-}
 
 function makeImage(src: string): HTMLImageElement {
     const img = new Image();
@@ -54,14 +24,6 @@ const structuresInfos: Map<UnitType, StructureInfo> = new Map([
     ["MissileSilo", { iconPath: siloIcon, image: makeImage(siloIcon) }],
     ["SAMLauncher", { iconPath: SAMIcon, image: makeImage(SAMIcon) }],
 ]);
-
-export const ICON_SIZE = {
-    circle: 28,
-    octagon: 28,
-    pentagon: 30,
-    square: 28,
-    triangle: 28,
-};
 
 export function createIcon(
     territoryColor: Colord,

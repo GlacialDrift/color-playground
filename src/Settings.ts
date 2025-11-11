@@ -1,4 +1,4 @@
-import {Colors} from "./Utils.ts";
+import {Colors, type UnitType} from "./Utils.ts";
 import Perlin from "./perlin.ts";
 import type {Colord} from "colord";
 
@@ -15,6 +15,8 @@ export interface Settings{
     numColorRows: number;
     canvasHeight: number;
     canvasWidth: number;
+    offset: number;
+    units: UnitType[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -30,6 +32,8 @@ export const DEFAULT_SETTINGS: Settings = {
     numColorRows: 16,
     canvasHeight: 0,
     canvasWidth: 0,
+    offset: 0.5,
+    units: ["City", "Factory", "Port", "DefensePost", "MissileSilo", "SAMLauncher"],
 };
 
 

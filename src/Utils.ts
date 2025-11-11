@@ -1,11 +1,49 @@
 import {colord, Colord} from "colord";
 
+export type ShapeType =
+    | "triangle"
+    | "square"
+    | "pentagon"
+    | "octagon"
+    | "circle";
+
+// @ts-ignore
+export type UnitType =
+    | "City"
+    | "Factory"
+    | "DefensePost"
+    | "Port"
+    | "MissileSilo"
+    | "SAMLauncher";
+
 export interface innerBox {
     x: number;
     y: number;
     width: number;
     height: number;
 }
+
+export interface StructureInfo {
+    iconPath: string;
+    image: HTMLImageElement | null;
+}
+
+export const STRUCTURE_SHAPES: Partial<Record<UnitType, ShapeType>> = {
+    City: "circle",
+    Port: "pentagon",
+    Factory: "circle",
+    DefensePost: "octagon",
+    SAMLauncher: "square",
+    MissileSilo: "triangle",
+};
+
+export const ICON_SIZE = {
+    circle: 28,
+    octagon: 28,
+    pentagon: 30,
+    square: 28,
+    triangle: 28,
+};
 
 export const Colors: Colord[] = [
     colord("rgb(163,230,53)"), // Yellow Green

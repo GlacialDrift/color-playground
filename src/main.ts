@@ -1,7 +1,7 @@
 
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
-import type {innerBox} from "./Utils.ts";
+import {ICON_SIZE, type innerBox} from "./Utils.ts";
 import {createIcon} from "./IconDrawing.ts";
 
 class ColorPlayground {
@@ -22,7 +22,7 @@ class ColorPlayground {
 
         this.resize();
 
-        const context = this.canvas.getContext("2d");
+        const context = this.canvas.getContext("2d", {willReadFrequently: true});
         if(!context) throw new Error("Could not get context");
         this.ctx = context;
 
@@ -82,17 +82,6 @@ class ColorPlayground {
         if(this.settings.showStructures){
             this.drawStructures(this.innerBoxes[1], this.settings.colors);
         }
-    }
-
-    drawStructures(innerBox: innerBox, colors: Colord[]){
-
-        const yOffset = innerBox.y;
-        const xOffset = innerBox.x;
-
-        const color = colors[0];
-        const border = color.darken(0.125);
-        const icon = createIcon(color, border, "City");
-        this.ctx.drawImage(icon, xOffset+20, yOffset+10);
     }
 
     generateTerrain(innerBox: innerBox): number[] {
@@ -160,8 +149,6 @@ class ColorPlayground {
             };
 
             innerBoxes.push(innerBox);
-
-            // console.log(`Drew box #: ${index+1}`)
             x = xOffset + boxWidth;
         });
 
@@ -172,9 +159,9 @@ class ColorPlayground {
         if(!this.ctx) throw new Error("Can't get Canvas Context");
         if(!this.terrain) throw new Error("No Terrain has been generated");
         const width = innerBox.width;
-        const height = innerBox.height;
+        const height = Math.floor(innerBox.height / this.settings.numColorRows)*this.settings.numColorRows;
 
-        const imageData = this.ctx?.getImageData(innerBox.x,innerBox.y, width, height);
+        const imageData = this.ctx.getImageData(innerBox.x,innerBox.y, width, height);
         let data = imageData.data;
 
         for(let x=0; x<width; x++){
@@ -221,10 +208,10 @@ class ColorPlayground {
     }
 
     drawLeftColors(innerBox: innerBox, colors: Colord[]) {
-        const heights = innerBox.height / this.settings.numColorRows;
-        const widths = innerBox.width / 4;
-        const yOffset = innerBox.y;
-        const xOffset = innerBox.x;
+        const heights = Math.floor(innerBox.height / this.settings.numColorRows);
+        const widths = Math.floor(innerBox.width / 3);
+        const yOffset = innerBox.y - this.settings.offset;
+        const xOffset = innerBox.x - this.settings.offset;
 
         let count = 0;
         for(let i=this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
@@ -232,27 +219,24 @@ class ColorPlayground {
             const color = colors[i % this.settings.colors.length];
             const light = this.lighten(color, 0.13).alpha(0.65);
             const medium = this.darken(color, 0.15);
-            const dark = this.darken(color, 0.4);
 
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
             this.drawRect(xOffset + widths, yOffset + count * heights, widths, heights, light);
             this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, medium);
-            this.drawRect(xOffset + 3 * widths, yOffset + count * heights, widths, heights, dark);
             if(this.settings.showColorStrings) {
                 this.writeColor(xOffset + widths / 2, yOffset + count * heights + heights / 2, color);
                 this.writeColor(xOffset + widths / 2 + widths, yOffset + count * heights + heights / 2, light);
                 this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, medium);
-                this.writeColor(xOffset + widths / 2 + 3 * widths, yOffset + count * heights + heights / 2, dark);
             }
             count++;
         }
     }
 
     drawRightColors(innerBox: innerBox, colors: Colord[]){
-        const heights = innerBox.height / this.settings.numColorRows;
+        const heights = Math.floor(innerBox.height / this.settings.numColorRows);
         const widths = innerBox.width;
-        const yOffset = innerBox.y;
-        const xOffset = innerBox.x;
+        const yOffset = innerBox.y - this.settings.offset;
+        const xOffset = innerBox.x - this.settings.offset;
 
         let count = 0;
         for(let i= this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
@@ -266,15 +250,38 @@ class ColorPlayground {
         }
     }
 
-    writeColor(x:number, y:number, color: Colord | string, alignment?: CanvasTextAlign){
+    drawStructures(innerBox: innerBox, colors: Colord[]){
+        const heights = Math.floor(innerBox.height / this.settings.numColorRows);
+        const widths = innerBox.width;
+        const yOffset = innerBox.y + Math.floor(heights/2);
+        const deltaX = Math.floor(widths/this.settings.units.length);
+        const xOffset = innerBox.x + Math.floor(deltaX/2);
+
+        let count = 0;
+        for(let i= this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
+            const color = colors[i % this.settings.colors.length].alpha(150/255);
+            const border = colors[i % this.settings.colors.length].darken(0.125);
+
+            this.settings.units.forEach((unit, j) => {
+                const icon = createIcon(color, border, unit);
+                const shift = unit==="Port" ?  ICON_SIZE.pentagon/2 : ICON_SIZE.circle/2;
+                this.ctx.drawImage(icon, xOffset+deltaX*j-shift, yOffset + heights*count-shift);
+            })
+            count++;
+        }
+    }
+
+    writeColor(x:number, y:number, color: Colord | string, alignment: CanvasTextAlign = "center"){
         let text = (color instanceof Colord) ? color.toRgbString() : color;
         text = text.replaceAll(" ", "");
         const ctx = this.ctx;
         if(!ctx) throw new Error("Can't write color");
 
-        ctx.font = "12px Arial";
+        let fontsize = 20;
+
+        ctx.font = `${fontsize}px Arial`;
         ctx.fillStyle ="black";
-        ctx.textAlign = alignment ?? "center";
+        ctx.textAlign = alignment;
         ctx.textBaseline = "middle";
         ctx.fillText(text, x, y);
     }
