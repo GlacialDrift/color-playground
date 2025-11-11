@@ -1,5 +1,12 @@
 import {colord, Colord} from "colord";
 
+export interface innerBox {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 export const Colors: Colord[] = [
     colord("rgb(163,230,53)"), // Yellow Green
     colord("rgb(132,204,22)"), // Lime

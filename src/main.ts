@@ -1,6 +1,7 @@
-import type {innerBox} from "./interfaces.ts";
+
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
+import type {innerBox} from "./Utils.ts";
 
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;

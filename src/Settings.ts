@@ -1,4 +1,4 @@
-import {Colors} from "./Colors.ts";
+import {Colors} from "./Utils.ts";
 import Perlin from "./perlin.ts";
 import type {Colord} from "colord";
 
