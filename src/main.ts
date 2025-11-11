@@ -57,7 +57,7 @@ class ColorPlayground {
             this.cycleColors()
         });
         this.structureToggle!.addEventListener("click", () => {
-            this.settings.showStructures = !this.settings.showStructures;
+            if(this.settings.showColors) this.settings.showStructures = !this.settings.showStructures;
             this.redraw();
         });
         this.colorStringToggle!.addEventListener("click", () => {
@@ -66,6 +66,7 @@ class ColorPlayground {
         });
         this.colorToggle!.addEventListener("click", () => {
             this.settings.showColors = !this.settings.showColors;
+            if(!this.settings.showColors) this.settings.showStructures = false;
             this.redraw();
         })
     }
@@ -217,16 +218,19 @@ class ColorPlayground {
         for(let i=this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
 
             const color = colors[i % this.settings.colors.length];
-            const light = this.lighten(color, 0.13).alpha(0.65);
-            const medium = this.darken(color, 0.15);
+            const light = color.lighten(0.13).alpha(0.65);
+            let medium = this.borderColor(color);
+
+            const darken = medium.isLight() ? 0.17 : 0.15;
+            medium = medium.darken(darken);
 
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
             this.drawRect(xOffset + widths, yOffset + count * heights, widths, heights, light);
             this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, medium);
             if(this.settings.showColorStrings) {
-                this.writeColor(xOffset + widths / 2, yOffset + count * heights + heights / 2, color);
-                this.writeColor(xOffset + widths / 2 + widths, yOffset + count * heights + heights / 2, light);
-                this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, medium);
+                this.writeColor(xOffset + widths / 2, yOffset + count * heights + heights / 2, color, undefined, widths);
+                this.writeColor(xOffset + widths / 2 + widths, yOffset + count * heights + heights / 2, light, undefined, widths);
+                this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, medium, undefined, widths);
             }
             count++;
         }
@@ -240,11 +244,11 @@ class ColorPlayground {
 
         let count = 0;
         for(let i= this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
-            const color = colors[i % this.settings.colors.length].alpha(150/255);
-            const border = colors[i % this.settings.colors.length].darken(0.125);
-            this.drawRect(xOffset, yOffset + count * heights, widths, heights, color, border);
+            const tc = this.territoryColor(colors[i % this.settings.colors.length]);
+            const bc = this.borderColor(colors[i % this.settings.colors.length]);
+            this.drawRect(xOffset, yOffset + count * heights, widths, heights, tc, bc);
             if(this.settings.showColorStrings) {
-                this.writeColor(xOffset+10, yOffset+count*heights + heights/2, color, "start");
+                this.writeColor(xOffset+10, yOffset+count*heights + heights/2, tc, "start");
             }
             count++;
         }
@@ -259,11 +263,11 @@ class ColorPlayground {
 
         let count = 0;
         for(let i= this.settings.colorIndex; i<this.settings.colorIndex+this.settings.numColorRows; i++) {
-            const color = colors[i % this.settings.colors.length].alpha(150/255);
-            const border = colors[i % this.settings.colors.length].darken(0.125);
+            const tc = this.territoryColor(colors[i % this.settings.colors.length]);
+            const bc = this.borderColor(colors[i % this.settings.colors.length]);
 
             this.settings.units.forEach((unit, j) => {
-                const icon = createIcon(color, border, unit);
+                const icon = createIcon(tc, bc, unit);
                 const shift = unit==="Port" ?  ICON_SIZE.pentagon/2 : ICON_SIZE.circle/2;
                 this.ctx.drawImage(icon, xOffset+deltaX*j-shift, yOffset + heights*count-shift);
             })
@@ -271,18 +275,32 @@ class ColorPlayground {
         }
     }
 
-    writeColor(x:number, y:number, color: Colord | string, alignment: CanvasTextAlign = "center"){
+    writeColor(x:number, y:number, color: Colord | string, alignment?: CanvasTextAlign, width?: number){
         let text = (color instanceof Colord) ? color.toRgbString() : color;
         text = text.replaceAll(" ", "");
         const ctx = this.ctx;
         if(!ctx) throw new Error("Can't write color");
 
-        let fontsize = 20;
+        let fontsize = 50;
+        let textWidth: number;
+        let flag = false;
 
-        ctx.font = `${fontsize}px Arial`;
-        ctx.fillStyle ="black";
-        ctx.textAlign = alignment;
-        ctx.textBaseline = "middle";
+        do {
+            fontsize -= fontsize<12 ? 1: 2;
+            if(!width) fontsize = 32;
+            ctx.font = `${fontsize}px Arial`;
+            ctx.fillStyle = "black";
+            ctx.textAlign = alignment ?? "center";
+            ctx.textBaseline = "middle";
+            textWidth = ctx.measureText(text).width;
+            if(!width) flag = true;
+            else{
+                flag = textWidth < width-2;
+            }
+        } while(!flag);
+
+        console.log(fontsize, textWidth);
+
         ctx.fillText(text, x, y);
     }
 
@@ -325,14 +343,12 @@ class ColorPlayground {
         ctx.stroke();
     }
 
-    lighten(base: Colord | string, amt: number): Colord {
-        if(typeof base === "string") base = colord(base);
-        return base.lighten(amt);
+    territoryColor(base: Colord){
+        return base.alpha(150/255);
     }
 
-    darken(base: Colord | string, amt: number): Colord {
-        if(typeof base === "string") base = colord(base);
-        return base.darken(amt);
+    borderColor(base: Colord){
+        return base.darken(.125);
     }
 }
 
