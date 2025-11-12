@@ -193,6 +193,11 @@ export class LABGraphic implements Graphic {
         return dark.toRgbString();
     }
 
+    /* TODO: Right now, the light color is set to transparent. Therefore, should really be comparing to territory color.
+     *       if the territory color alone can't provide the required delta for contrast, then need to lighten the
+     *       territory color? This is being drawn on top of the territory itself, so make it whiter?
+     */
+
     static buildColors(light: Colord, dark: Colord): [string, string] {
         let delta = light.delta(dark.toHex());
         let lightLAB = colord(light.alpha(0).toHex()).toLab();
