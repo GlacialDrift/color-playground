@@ -307,16 +307,16 @@ class ColorPlayground {
         y -= iconWidth / 2;
 
         if(iconCount%2 && iconCount > 0){
-            this.ctx.drawImage(icons[0], x, y);
+            count = -1*Math.floor(iconCount/2);
+            x += count*totalSpacer;
         }else if (iconCount > 1) {
-            this.ctx.drawImage(icons[0], x + totalSpacer / 2, y);
-            this.ctx.drawImage(icons[1], x - totalSpacer / 2, y);
-            count += 0.5;
+            count = -1*Math.floor(iconCount/2);
+            x += count*totalSpacer;
+            x -= iconWidth / 2;
         }
-        for (let i = count===1 ? 1 : 2 ; i<iconCount; i+=2){
-            this.ctx.drawImage(icons[i], x + totalSpacer*count, y);
-            if(iconCount > i+1) this.ctx.drawImage(icons[i+1], x - totalSpacer*count, y);
-            count++;
+        for (let i = 0; i<iconCount; i++){
+            this.ctx.drawImage(icons[i], x, y);
+            x += totalSpacer;
         }
     }
 

@@ -7,7 +7,7 @@ import siloIcon from "../resources/MissileSiloUnit.png";
 import SAMIcon from "../resources/SamLauncherUnit.png";
 import defenseIcon from "../resources/ShieldIcon.png";
 import {ICON_SIZE, STRUCTURE_SHAPES, type StructureInfo, type UnitType} from "./Utils.ts";
-import {StandardGraphic} from "./Graphic.ts";
+import {DarkGraphic, StandardGraphic} from "./Graphic.ts";
 
 extend([a11yPlugin]);
 
@@ -34,12 +34,10 @@ export class IconDraw {
         graphics: string[],
         renderIcon: boolean = true
     ): HTMLCanvasElement[] {
-
         const iconList: HTMLCanvasElement[] = [];
         graphics.forEach((graphic) => {
-            iconList.push(IconDraw.createIcon(territoryColor, borderColor, structure, renderIcon, graphic))
+            iconList.push(IconDraw.createIcon(territoryColor, borderColor, structure, renderIcon, graphic));
         });
-
         return iconList;
     }
 
@@ -68,7 +66,11 @@ export class IconDraw {
         const lighter = bc.luminance() < tc.luminance() ? tc : bc;
         let border: string;
         switch(graphic){
-
+            case "darker":
+                context.fillStyle = DarkGraphic.fillStyle(lighter, darker);
+                context.strokeStyle = DarkGraphic.strokeStyle(lighter, darker);
+                border = DarkGraphic.border(lighter, darker);
+                break;
             default:
                 context.fillStyle = StandardGraphic.fillStyle(lighter, darker)
                 border = StandardGraphic.border(lighter, darker)
