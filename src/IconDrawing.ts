@@ -7,7 +7,7 @@ import siloIcon from "../resources/MissileSiloUnit.png";
 import SAMIcon from "../resources/SamLauncherUnit.png";
 import defenseIcon from "../resources/ShieldIcon.png";
 import {ICON_SIZE, STRUCTURE_SHAPES, type StructureInfo, type UnitType} from "./Utils.ts";
-import {DarkGraphic, StandardGraphic} from "./Graphic.ts";
+import {ContrastGraphic, DarkGraphic, StandardGraphic} from "./Graphic.ts";
 
 extend([a11yPlugin]);
 
@@ -65,16 +65,30 @@ export class IconDraw {
         const darker = bc.luminance() < tc.luminance() ? bc : tc;
         const lighter = bc.luminance() < tc.luminance() ? tc : bc;
         let border: string;
+        let light: string, dark: string;
+
         switch(graphic){
             case "darker":
-                context.fillStyle = DarkGraphic.fillStyle(lighter, darker);
-                context.strokeStyle = DarkGraphic.strokeStyle(lighter, darker);
-                border = DarkGraphic.border(lighter, darker);
+                [light, dark] = DarkGraphic.buildColors(lighter, darker);
+                context.fillStyle = light;
+                context.strokeStyle = dark;
+                console.log(`darker light: ${light}\ndarker dark: ${dark}`);
+                border = dark;
+                break;
+            case "contrast":
+                [light, dark] = ContrastGraphic.buildColors(lighter, darker);
+                context.fillStyle = light;
+                context.strokeStyle = dark;
+                console.log(`contrast light: ${light}\ncontrast dark: ${dark}`);
+                border = dark;
                 break;
             default:
-                context.fillStyle = StandardGraphic.fillStyle(lighter, darker)
-                border = StandardGraphic.border(lighter, darker)
-                context.strokeStyle = StandardGraphic.strokeStyle(lighter, darker);
+                console.log(`territory: ${lighter.toRgbString()}\nborder: ${darker.toRgbString()}`);
+                [light, dark] = StandardGraphic.buildColors(lighter, darker);
+                context.fillStyle = light;
+                context.strokeStyle = dark;
+                console.log(`standard light: ${light}\nstandard dark: ${dark}`);
+                border = dark;
         }
 
 

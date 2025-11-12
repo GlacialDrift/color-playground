@@ -226,11 +226,11 @@ class ColorPlayground {
 
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, color);
             this.drawRect(xOffset + widths, yOffset + count * heights, widths, heights, light);
-            this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, medium);
+            this.drawRect(xOffset + 2 * widths, yOffset + count * heights, widths, heights, this.borderColor(color));
             if(this.settings.showColorStrings) {
                 this.writeColor(xOffset + widths / 2, yOffset + count * heights + heights / 2, color, undefined, widths);
                 this.writeColor(xOffset + widths / 2 + widths, yOffset + count * heights + heights / 2, light, undefined, widths);
-                this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, medium, undefined, widths);
+                this.writeColor(xOffset + widths / 2 + 2 * widths, yOffset + count * heights + heights / 2, this.borderColor(color), undefined, widths);
             }
             count++;
         }

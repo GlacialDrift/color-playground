@@ -1,4 +1,26 @@
-import {colord, Colord} from "colord";
+import {colord, Colord, type RgbaColor} from "colord";
+
+export function lum(r: number, g: number, b: number): number{
+    let a = [r, g, b].map((v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, GAMMA);
+    });
+    return a[0] * RED + a[1] * GREEN + a[2] * BLUE;
+}
+
+export function contrastRatio(color1: Colord | RgbaColor, color2: Colord | RgbaColor): number {
+    if(color1 instanceof Colord) color1 = color1.toRgb();
+    if(color2 instanceof Colord) color2 = color2.toRgb();
+
+    let lum1 = lum(color1.r, color1.g, color1.b);
+    let lum2 = lum(color2.r, color2.g, color2.b);
+    let bright = Math.max(lum1, lum2);
+    let dark = Math.min(lum1, lum2);
+    const ratio = (bright + 0.05) / (dark + 0.05);
+
+    return ratio;
+
+}
 
 export type ShapeType =
     | "triangle"
@@ -44,6 +66,11 @@ export const ICON_SIZE = {
     square: 28,
     triangle: 28,
 };
+
+export const RED = 0.2126;
+export const GREEN = 0.7152;
+export const BLUE = 0.0722;
+export const GAMMA = 2.4;
 
 export const Colors: Colord[] = [
     colord("rgb(163,230,53)"), // Yellow Green
