@@ -17,6 +17,7 @@ export interface Settings{
     canvasWidth: number;
     offset: number;
     units: UnitType[];
+    graphics: string[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
     canvasWidth: 0,
     offset: 0.5,
     units: ["City", "Factory", "Port", "DefensePost", "MissileSilo", "SAMLauncher"],
+    graphics: ["standard"],
 };
 
 

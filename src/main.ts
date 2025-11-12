@@ -2,7 +2,7 @@
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
 import {ICON_SIZE, type innerBox, type UnitType} from "./Utils.ts";
-import {createIcon} from "./IconDrawing.ts";
+import {IconDraw} from "./IconDrawing.ts";
 
 class ColorPlayground {
     private readonly canvas: HTMLCanvasElement;
@@ -274,7 +274,7 @@ class ColorPlayground {
     }
 
     drawIcon(unit: UnitType, territory: Colord, border: Colord, xPos: number, yPos: number){
-        const icons = createIcon(territory, border, unit);
+        const icons = IconDraw.createIcons(territory, border, unit, this.settings.graphics);
         let iconWidth = 0;
         let x = xPos;
         let y = yPos;
