@@ -247,9 +247,6 @@ class ColorPlayground {
             const tc = this.territoryColor(colors[i % this.settings.colors.length]);
             const bc = this.borderColor(colors[i % this.settings.colors.length]);
             this.drawRect(xOffset, yOffset + count * heights, widths, heights, tc, bc);
-            if(this.settings.showColorStrings) {
-                this.writeColor(xOffset+10, yOffset+count*heights + heights/2, tc, "start");
-            }
             count++;
         }
     }
