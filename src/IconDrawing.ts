@@ -67,17 +67,12 @@ export class IconDraw {
         const darker = bc.luminance() < tc.luminance() ? bc : tc;
         const lighter = bc.luminance() < tc.luminance() ? tc : bc;
         let border: string;
-
-        console.log(graphic);
-
         switch(graphic){
-            case "standard":
+
+            default:
                 context.fillStyle = StandardGraphic.fillStyle(lighter, darker)
                 border = StandardGraphic.border(lighter, darker)
                 context.strokeStyle = StandardGraphic.strokeStyle(lighter, darker);
-                break;
-            default:
-                throw new Error(`Unsupported graphic type "${graphic}"`);
         }
 
 
