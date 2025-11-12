@@ -1,7 +1,8 @@
-import type {Colord} from "colord";
-import {contrastRatio} from "./Utils.ts";
+import {clamp, contrastRatio} from "./Utils.ts";
+import {colord, type Colord, extend} from "colord";
+import labPlugin from "colord/plugins/lab";
 
-
+extend([labPlugin]);
 
 
 interface Graphic {
@@ -129,8 +130,6 @@ export class ContrastGraphic implements Graphic {
         const l3 = dark.toRgbString();
         const l4 = darker.toRgbString();
 
-        console.log(`Contrast:\nl1: ${l1} \nl2: ${l2} \nl3: ${l3} \nl4: ${l4}`);
-
         if(contrastLD > 7.5) return [l2, l3];
         else if(contrastDD > 7.5) return [l3, l4];
         else if(contrastLL > 7.5) return [l1, l2];
@@ -147,5 +146,94 @@ export class ContrastGraphic implements Graphic {
 
     borderInst(light: Colord, dark: Colord): string {
         return ContrastGraphic.border(light, dark);
+    }
+}
+
+
+
+
+
+export class LABGraphic implements Graphic {
+    static fillStyle(light: Colord, dark: Colord) {
+        let delta = light.delta(dark.toHex());
+        let lightLAB = light.toLab();
+        let darkLAB = dark.toLab();
+
+        while(delta < 0.5){
+            lightLAB.l = clamp(lightLAB.l + 0.5, 0 ,100);
+            darkLAB.l = clamp(darkLAB.l - 0.5, 0, 100);
+            delta = colord(lightLAB).delta(colord(darkLAB).toHex());
+        }
+
+        return colord(lightLAB).toRgbString();
+    }
+
+    static strokeStyle(light: Colord, dark: Colord){
+        let delta = light.delta(dark.toHex());
+        let lightLAB = light.toLab();
+        let darkLAB = dark.toLab();
+
+        while(delta < 0.5){
+            lightLAB.l = clamp(lightLAB.l + 0.5, 0 ,100);
+            darkLAB.l = clamp(darkLAB.l - 0.5, 0, 100);
+            delta = colord(lightLAB).delta(colord(darkLAB).toHex());
+        }
+
+        return colord(darkLAB).toRgbString();
+    }
+
+    static border(light: Colord, dark: Colord) {
+        let delta = colord(light.toHex()).delta(dark.toHex());
+        while(delta < 0.5){
+            light.lighten(0.1);
+            dark.darken(0.1);
+            delta = colord(light.toHex()).delta(dark.toHex());
+        }
+
+        return dark.toRgbString();
+    }
+
+    static buildColors(light: Colord, dark: Colord): [string, string] {
+        let delta = light.delta(dark.toHex());
+        let lightLAB = colord(light.alpha(0).toHex()).toLab();
+        let darkLAB = dark.toLab();
+        let darker: Colord | null = null;
+        let lighter: Colord | null = null;
+        let l: Colord;
+        const limit = 20;
+
+        let count = 0;
+        while(delta < 0.4){
+            darkLAB.l = clamp(darkLAB.l - 5, 0, 100);
+            l = colord(lightLAB);
+            if(count > limit){
+                if(count === limit+1) darker = colord(darkLAB);
+                darker = darker!.darken(0.05);
+                l = colord(lightLAB);
+            }else if( count > 200){
+                if(count === 201) lighter = colord(lightLAB);
+                lighter = lighter!.lighten(0.05);
+                l = colord(lighter).alpha(0);
+            }
+            delta = l.delta((darker) ? darker.toHex() : colord(darkLAB).toHex());
+            count++;
+            if (count >500){
+                throw new Error("infinite loop.");
+            }
+        }
+
+        return [l!.toRgbString(), (darker) ? darker.toRgbString() : colord(darkLAB).toRgbString()];
+    }
+
+    fillStyleInst(light: Colord, dark: Colord): string {
+        return LABGraphic.fillStyle(light, dark);
+    }
+
+    strokeStyleInst(light: Colord, dark: Colord): string {
+        return LABGraphic.strokeStyle(light,dark );
+    }
+
+    borderInst(light: Colord, dark: Colord): string {
+        return LABGraphic.border(light, dark);
     }
 }

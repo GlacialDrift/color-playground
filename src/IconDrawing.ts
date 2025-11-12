@@ -7,7 +7,7 @@ import siloIcon from "../resources/MissileSiloUnit.png";
 import SAMIcon from "../resources/SamLauncherUnit.png";
 import defenseIcon from "../resources/ShieldIcon.png";
 import {ICON_SIZE, STRUCTURE_SHAPES, type StructureInfo, type UnitType} from "./Utils.ts";
-import {ContrastGraphic, DarkGraphic, StandardGraphic} from "./Graphic.ts";
+import {ContrastGraphic, DarkGraphic, LABGraphic, StandardGraphic} from "./Graphic.ts";
 
 extend([a11yPlugin]);
 
@@ -72,22 +72,25 @@ export class IconDraw {
                 [light, dark] = DarkGraphic.buildColors(lighter, darker);
                 context.fillStyle = light;
                 context.strokeStyle = dark;
-                console.log(`darker light: ${light}\ndarker dark: ${dark}`);
                 border = dark;
                 break;
             case "contrast":
                 [light, dark] = ContrastGraphic.buildColors(lighter, darker);
                 context.fillStyle = light;
                 context.strokeStyle = dark;
-                console.log(`contrast light: ${light}\ncontrast dark: ${dark}`);
+                border = dark;
+                break;
+            case "LAB":
+                [light, dark] = LABGraphic.buildColors(lighter, darker);
+                console.log(light);
+                context.fillStyle = light;
+                context.strokeStyle = dark;
                 border = dark;
                 break;
             default:
-                console.log(`territory: ${lighter.toRgbString()}\nborder: ${darker.toRgbString()}`);
                 [light, dark] = StandardGraphic.buildColors(lighter, darker);
                 context.fillStyle = light;
                 context.strokeStyle = dark;
-                console.log(`standard light: ${light}\nstandard dark: ${dark}`);
                 border = dark;
         }
 

@@ -22,6 +22,10 @@ export function contrastRatio(color1: Colord | RgbaColor, color2: Colord | RgbaC
 
 }
 
+export function clamp(num: number, low:number = 0, high:number = 1): number {
+    return Math.min(Math.max(num, low), high);
+}
+
 export type ShapeType =
     | "triangle"
     | "square"
@@ -135,5 +139,5 @@ export const Colors: Colord[] = [
     colord("rgb(251,146,60)"), // Light Orange
     colord("rgb(249,115,22)"), // Tangerine
     colord("rgb(234,88,12)"), // Burnt Orange
-    colord("rgb(133,77,14)") // Chocolate
+    colord("rgb(182,118,34)") // Chocolate
 ];
