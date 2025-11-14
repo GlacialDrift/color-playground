@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
     canvasWidth: 0,
     offset: 0.5,
     units: ["City", "Factory", "Port", "DefensePost", "MissileSilo", "SAMLauncher"],
-    graphics: ["standard", "LAB"],
+    graphics: ["standard", "standard", "standard", "LAB", "LAB", "LAB"],
 };
 
 

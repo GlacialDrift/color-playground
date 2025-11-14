@@ -1,7 +1,7 @@
 
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
-import {ICON_SIZE, type innerBox, type UnitType} from "./Utils.ts";
+import {clamp, ICON_SIZE, type innerBox, rescale, type UnitType} from "./Utils.ts";
 import {IconDraw} from "./IconDrawing.ts";
 
 class ColorPlayground {
@@ -94,7 +94,11 @@ class ColorPlayground {
         for(let x = 0; x < width; x++){
             for(let y = 0; y < height; y++){
                 const index = y*width + x;
-                terrain[index] = Math.floor(Math.abs(this.settings.perlin.perlin2(x / 50, y / 50)) * 50);
+                terrain[index] = Math.floor(Math.abs(this.settings.perlin.perlin2(x / 500, y / 500)) * 20);
+                terrain[index] += Math.floor(Math.abs(this.settings.perlin.perlin2(x / 200, y / 200)) * 20);
+                terrain[index] += Math.floor(Math.abs(this.settings.perlin.perlin2(x / 100, y / 100)) * 20);
+                terrain[index] += Math.floor(Math.abs(this.settings.perlin.perlin2(x / 50, y / 50)) * 20);
+                terrain[index] = rescale(terrain[index], 0, 32)*32;
             }
         }
         return terrain;
@@ -397,3 +401,9 @@ class ColorPlayground {
 
 const c = new ColorPlayground();
 c.draw();
+// let color = colord({r:133, g:77, b:14}).toLab();
+// console.log(colord(color).toRgbString());
+// for(let i=0; i< 50; i++){
+//     color.l = clamp(color.l+5, 0, 100);
+//     console.log(colord(color).toRgbString(), color.l);
+// }

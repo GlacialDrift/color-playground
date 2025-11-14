@@ -82,7 +82,6 @@ export class IconDraw {
                 break;
             case "LAB":
                 [light, dark] = LABGraphic.buildColors(lighter, darker);
-                console.log(light);
                 context.fillStyle = light;
                 context.strokeStyle = dark;
                 border = dark;

@@ -193,40 +193,35 @@ export class LABGraphic implements Graphic {
         return dark.toRgbString();
     }
 
-    /* TODO: Right now, the light color is set to transparent. Therefore, should really be comparing to territory color.
-     *       if the territory color alone can't provide the required delta for contrast, then need to lighten the
-     *       territory color? This is being drawn on top of the territory itself, so make it whiter?
-     */
-
     static buildColors(light: Colord, dark: Colord): [string, string] {
         let delta = light.delta(dark.toHex());
-        let lightLAB = colord(light.alpha(0).toHex()).toLab();
+        let lightLAB = colord(light.alpha(150/255).toHex()).toLab();
         let darkLAB = dark.toLab();
         let darker: Colord | null = null;
-        let lighter: Colord | null = null;
-        let l: Colord;
-        const limit = 20;
+        let l: Colord = colord(lightLAB);
+        const limit = 10;
+        const target = 0.5;
 
         let count = 0;
-        while(delta < 0.4){
-            darkLAB.l = clamp(darkLAB.l - 5, 0, 100);
-            l = colord(lightLAB);
-            if(count > limit){
+        while(delta < target){
+            if (count <= limit) {
+                darkLAB.l = clamp(darkLAB.l - 5, 0, 100);
+            } else if(count > limit && count <= limit*2){
                 if(count === limit+1) darker = colord(darkLAB);
                 darker = darker!.darken(0.05);
-                l = colord(lightLAB);
-            }else if( count > 200){
-                if(count === 201) lighter = colord(lightLAB);
-                lighter = lighter!.lighten(0.05);
-                l = colord(lighter).alpha(0);
+            } else {
+                lightLAB.l = clamp(lightLAB.l + 5, 0, 100);
             }
-            delta = l.delta((darker) ? darker.toHex() : colord(darkLAB).toHex());
+            l = colord(lightLAB);
+            darker = (darker) ? darker : colord(darkLAB);
+            delta = l.delta(darker.toHex());
+            if(delta >= target) break;
             count++;
-            if (count >500){
+            if (count > 500){
                 throw new Error("infinite loop.");
             }
+            if(count <= limit) darker = null;
         }
-
         return [l!.toRgbString(), (darker) ? darker.toRgbString() : colord(darkLAB).toRgbString()];
     }
 
