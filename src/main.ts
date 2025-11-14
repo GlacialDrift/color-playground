@@ -1,7 +1,7 @@
 
 import {colord, Colord} from "colord";
 import {DEFAULT_SETTINGS, type Settings} from "./Settings.ts";
-import {clamp, ICON_SIZE, type innerBox, rescale, type UnitType} from "./Utils.ts";
+import {ICON_SIZE, type innerBox, rescale, type UnitType} from "./Utils.ts";
 import {IconDraw} from "./IconDrawing.ts";
 
 class ColorPlayground {
