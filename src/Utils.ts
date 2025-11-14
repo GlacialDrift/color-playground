@@ -16,10 +16,7 @@ export function contrastRatio(color1: Colord | RgbaColor, color2: Colord | RgbaC
     let lum2 = lum(color2.r, color2.g, color2.b);
     let bright = Math.max(lum1, lum2);
     let dark = Math.min(lum1, lum2);
-    const ratio = (bright + 0.05) / (dark + 0.05);
-
-    return ratio;
-
+    return (bright + 0.05) / (dark + 0.05);
 }
 
 export function clamp(num: number, low:number = 0, high:number = 1): number {
